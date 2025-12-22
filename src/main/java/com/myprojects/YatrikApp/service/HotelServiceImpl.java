@@ -2,12 +2,15 @@ package com.myprojects.YatrikApp.service;
 
 import com.myprojects.YatrikApp.dto.HotelDto;
 import com.myprojects.YatrikApp.entity.Hotel;
+import com.myprojects.YatrikApp.entity.Room;
 import com.myprojects.YatrikApp.exception.ResourceNotFoundException;
 import com.myprojects.YatrikApp.repository.HotelRepository;
+import com.myprojects.YatrikApp.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j // automatically handles static final logger in code
@@ -15,6 +18,8 @@ import org.springframework.stereotype.Service;
 public class HotelServiceImpl implements HotelService{
 
     private final HotelRepository hotelRepository;
+    private final InventoryService inventoryService;
+    private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
 
 
@@ -50,10 +55,37 @@ public class HotelServiceImpl implements HotelService{
     }
 
     @Override
+    @Transactional // where we are making 2 db cals
     public void deleteHotelById(Long id) {
-        boolean exists = hotelRepository.existsById(id);
-        if(!exists) throw new ResourceNotFoundException("Hotel not found eith Id : " + id);
+        Hotel hotel = hotelRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found eith Id : " + id));
+
+
+        // DONE : delete there future inventory for this hotel
+        for(Room room: hotel.getRooms()){
+            inventoryService.deleteAllInventories(room);
+            roomRepository.deleteById(room.getId());
+        }
         hotelRepository.deleteById(id);
-        // TODO : delete there future inventory for this hotel
+    }
+
+    @Override
+    @Transactional
+    public void activeHotel(Long hotelId) {
+        log.info("Activating the hotel with Id : {}", hotelId);
+        Hotel hotel = hotelRepository
+                .findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found eith Id : " + hotelId));
+
+        hotel.setActive(true);
+
+        // DONE: creat inventory for all the rooms
+        //assuming only do it once
+        for(Room room: hotel.getRooms()){
+            inventoryService.initializeRoomForAYear(room);
+        }
+
+
     }
 }
