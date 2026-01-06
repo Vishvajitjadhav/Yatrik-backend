@@ -1,10 +1,12 @@
 package com.myprojects.YatrikApp.service;
 
 import com.myprojects.YatrikApp.dto.HotelDto;
+import com.myprojects.YatrikApp.dto.HotelPriceDto;
 import com.myprojects.YatrikApp.dto.HotelSearchDto;
 import com.myprojects.YatrikApp.entity.Hotel;
 import com.myprojects.YatrikApp.entity.Inventory;
 import com.myprojects.YatrikApp.entity.Room;
+import com.myprojects.YatrikApp.repository.HotelMinPriceRepository;
 import com.myprojects.YatrikApp.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ public class InventoryServiceImpl implements InventoryService{
     private final ModelMapper modelMapper;
 
     private final InventoryRepository inventoryRepository;
+    private final HotelMinPriceRepository hotelMinPriceRepository;
 
     @Override
     public void initializeRoomForAYear(Room room) {
@@ -57,15 +60,17 @@ public class InventoryServiceImpl implements InventoryService{
 
     //Search function pagination
     @Override
-    public Page<HotelDto> searchHotels(HotelSearchDto hotelSearchDto) {
+    public Page<HotelPriceDto> searchHotels(HotelSearchDto hotelSearchDto) {
         log.info("Searching hotels for {} city, from {} to {}", hotelSearchDto.getCity(), hotelSearchDto.getStartDate(), hotelSearchDto.getEndDate());
         Pageable pageable = PageRequest.of(hotelSearchDto.getPage(), hotelSearchDto.getSize());
         long dateCount = ChronoUnit.DAYS.between(hotelSearchDto.getStartDate(), hotelSearchDto.getEndDate()) + 1;
 
-        Page<Hotel> hotelPage = inventoryRepository.findHotelsWithAvailableInventory(hotelSearchDto.getCity(),
+        // Business Logic - 90 days
+        Page<HotelPriceDto> hotelPage =
+                hotelMinPriceRepository.findHotelsWithAvailableInventory(hotelSearchDto.getCity(),
                 hotelSearchDto.getStartDate(), hotelSearchDto.getEndDate(), hotelSearchDto.getRoomsCount(),
                 dateCount, pageable );
 
-        return hotelPage.map((element) -> modelMapper.map(element, HotelDto.class));
+        return hotelPage;
     }
 }

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: YatrikApp
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/yatrikdb
+    username: postgres
+    password: 1009
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: never
+
+server:
+  servlet:
+    context-path: /api/v1
