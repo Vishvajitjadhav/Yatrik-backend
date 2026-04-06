@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class GuestsDto {
-    private long id;
-    private User user;
+    private Long id;
     private String name;
     private Gender gender;
     private Integer age;

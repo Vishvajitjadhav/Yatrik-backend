@@ -92,11 +92,11 @@
             <scope>runtime</scope>
         </dependency>
 
+<!--    Stripe Java Maven-->
         <dependency>
-            <groupId>com.razorpay</groupId>
-            <artifactId>razorpay-java</artifactId>
-            <version>1.4.8</version>
-            <scope>compile</scope>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>32.0.0</version>
         </dependency>
 
 
