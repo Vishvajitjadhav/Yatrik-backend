@@ -2,9 +2,10 @@ package com.myprojects.YatrikApp.controller;
 
 import com.myprojects.YatrikApp.dto.BookingDto;
 import com.myprojects.YatrikApp.dto.BookingRequest;
+import com.myprojects.YatrikApp.dto.BookingStatusResponseDto;
 import com.myprojects.YatrikApp.dto.GuestsDto;
 import com.myprojects.YatrikApp.service.BookingService;
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,18 @@ public class HotelBookingController {
     public ResponseEntity<Map<String, String>> initiatePayment(@PathVariable Long bookingId) {
         String sessionUrl = bookingService.initiatePayments(bookingId);
         return ResponseEntity.ok(Map.of("sessionUrl" ,sessionUrl));
+    }
+
+    @PostMapping("/{bookingId}/cancel")
+    public ResponseEntity<Void> cancelBooking(@PathVariable Long bookingId) {
+        bookingService.cancelBooking(bookingId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{bookingId}/status")
+    @Operation(summary = "Check the status of the booking", tags = {"Booking Flow"})
+    public ResponseEntity<BookingStatusResponseDto> getBookingStatus(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(new BookingStatusResponseDto(bookingService.getBookingStatus(bookingId)));
     }
 
 }

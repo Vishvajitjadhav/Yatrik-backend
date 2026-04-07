@@ -3,6 +3,7 @@ package com.myprojects.YatrikApp.service;
 import com.myprojects.YatrikApp.dto.BookingDto;
 import com.myprojects.YatrikApp.dto.BookingRequest;
 import com.myprojects.YatrikApp.dto.GuestsDto;
+import com.myprojects.YatrikApp.entity.enums.BookingStatus;
 import com.stripe.model.Event;
 import org.jspecify.annotations.Nullable;
 
@@ -17,4 +18,8 @@ public interface BookingService {
 
 
     void capturePayment(Event event);
+
+    void cancelBooking(Long bookingId);
+
+    BookingStatus getBookingStatus(Long bookingId);
 }
