@@ -55,7 +55,7 @@ public class BookingServiceImpl implements BookingService{
         Hotel hotel = hotelRepository.findById(bookingRequest.getHotelId()).orElseThrow(() ->
                 new ResourceNotFoundException("Hotel not found with id: " + bookingRequest.getHotelId()));
 
-        Room room = roomRepository.findById(bookingRequest.getHotelId()).orElseThrow(() ->
+        Room room = roomRepository.findById(bookingRequest.getRoomId()).orElseThrow(() ->
                 new ResourceNotFoundException("Room not found with id: " + bookingRequest.getRoomId()));
 
         List<Inventory> inventoryList = inventoryRepository.findAndLockAvailableInventory(room.getId(),
@@ -210,7 +210,7 @@ public class BookingServiceImpl implements BookingService{
                 () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
         );
         User user = getCurrentUser();
-        if (!user.equals(booking.getUser())) {
+        if (booking.getUser() == null || !Objects.equals(booking.getUser().getId(), user.getId())) {
             throw new UnAuthorisedException("Booking does not belong to this user with id: "+user.getId());
         }
         if(booking.getBookingStatus() != BookingStatus.CONFIRMED){
@@ -248,11 +248,21 @@ public class BookingServiceImpl implements BookingService{
                 () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
         );
         User user = getCurrentUser();
-        if (!user.equals(booking.getUser())) {
+        if (booking.getUser() == null || !Objects.equals(booking.getUser().getId(), user.getId())) {
             throw new UnAuthorisedException("Booking does not belong to this user with id: "+user.getId());
         }
 
         return booking.getBookingStatus();
+    }
+
+    @Override
+    public List<BookingDto> getMyBookings() {
+        User user = getCurrentUser();
+        log.info("Fetching bookings for user with id: {}", user.getId());
+        return bookingRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(booking -> modelMapper.map(booking, BookingDto.class))
+                .toList();
     }
 
     public boolean hasBoookingExpired(Booking booking){

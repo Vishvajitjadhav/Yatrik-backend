@@ -23,7 +23,9 @@ public class HotelBrowserController {
     private final HotelService hotelService;
 
     //Search function pagination
-    @GetMapping("/search")
+    // POST (not GET): the search criteria travel in the request body, which browsers cannot
+    // attach to a GET request. See docs/api-contract.md.
+    @PostMapping("/search")
     public ResponseEntity<Page<HotelPriceDto>> searchHotels(@RequestBody HotelSearchDto hotelSearchDto){
 
         var page = inventoryService.searchHotels(hotelSearchDto);

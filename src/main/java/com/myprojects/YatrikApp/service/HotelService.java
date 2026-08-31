@@ -2,11 +2,13 @@ package com.myprojects.YatrikApp.service;
 
 import com.myprojects.YatrikApp.dto.HotelDto;
 import com.myprojects.YatrikApp.dto.HotelInfoDto;
-import com.myprojects.YatrikApp.entity.Hotel;
-import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 public interface HotelService {
     HotelDto createNewHotel(HotelDto hotelDto);
+
+    List<HotelDto> getAllHotels();
 
     HotelDto getHotelById(Long id);
 
