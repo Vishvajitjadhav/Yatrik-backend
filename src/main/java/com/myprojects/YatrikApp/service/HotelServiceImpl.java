@@ -46,6 +46,16 @@ public class HotelServiceImpl implements HotelService{
     }
 
     @Override
+    public List<HotelDto> getAllHotels() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("Getting all hotels owned by user with id: {}", user.getId());
+        return hotelRepository.findByOwner(user)
+                .stream()
+                .map(hotel -> modelMapper.map(hotel, HotelDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public HotelDto getHotelById(Long id) {
         log.info("Getting the hotel with Id : {}", id);
         Hotel hotel = hotelRepository

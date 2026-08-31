@@ -49,4 +49,10 @@ public class HotelBookingController {
         return ResponseEntity.ok(new BookingStatusResponseDto(bookingService.getBookingStatus(bookingId)));
     }
 
+    @GetMapping
+    @Operation(summary = "List the current user's bookings", tags = {"Booking Flow"})
+    public ResponseEntity<List<BookingDto>> getMyBookings() {
+        return ResponseEntity.ok(bookingService.getMyBookings());
+    }
+
 }

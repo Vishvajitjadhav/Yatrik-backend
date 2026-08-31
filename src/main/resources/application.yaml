@@ -3,9 +3,9 @@ spring:
     name: YatrikApp
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/yatrikdb
-    username: postgres
-    password: 1009
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yatrikdb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1009}
 
   jpa:
     hibernate:
@@ -25,4 +25,13 @@ server:
 
 
 jwt:
-  secretKey: vjbdsdtamg9862bcydb564bdnmlapqw841bvs9a9s0vb
+  secretKey: ${JWT_SECRET:vjbdsdtamg9862bcydb564bdnmlapqw841bvs9a9s0vb}
+
+# Origin of the Vite dev server — used for CORS and Stripe redirect URLs.
+frontend:
+  url: ${FRONTEND_URL:http://localhost:5173}
+
+# Stripe is optional in local dev: leave these blank and checkout/webhook become safe no-ops.
+stripe:
+  secretKey: ${STRIPE_SECRET_KEY:}
+  webhookSecret: ${STRIPE_WEBHOOK_SECRET:}
