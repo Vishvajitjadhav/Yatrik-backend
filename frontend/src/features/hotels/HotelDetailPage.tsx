@@ -1,26 +1,56 @@
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Badge, Button, Container, EmptyState, Rating, Skeleton } from '@/components/ui'
+import { useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Badge, Button, Container, EmptyState, Rating, Select, Skeleton } from '@/components/ui'
 import { useAuthStore } from '@/stores/authStore'
-import { toast } from '@/stores/toastStore'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { addDays, todayIso } from '@/lib/format'
+import { GuestSelector } from '@/features/booking/components/GuestSelector'
+import { DEFAULT_OCCUPANCY, type Occupancy } from '@/features/booking/schemas'
 import type { Room } from '@/types/api'
+import { DateRangePicker } from './components/DateRangePicker'
 import { HotelGallery } from './components/HotelGallery'
 import { RoomCard } from './components/RoomCard'
 import { useHotelInfo } from './hooks'
+
+const roomOptions = Array.from({ length: 8 }, (_, i) => ({
+  value: String(i + 1),
+  label: `${i + 1} room${i > 0 ? 's' : ''}`,
+}))
 
 export function HotelDetailPage() {
   const { hotelId } = useParams()
   const id = Number(hotelId)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const user = useAuthStore((s) => s.user)
   const { data, isLoading, isError, refetch } = useHotelInfo(id)
+  useDocumentTitle(data?.hotel.name)
+
+  const today = todayIso()
+  // Seed the stay from any dates carried over from search; else sensible defaults.
+  const [checkIn, setCheckIn] = useState(searchParams.get('startDate') || addDays(today, 1))
+  const [checkOut, setCheckOut] = useState(searchParams.get('endDate') || addDays(today, 2))
+  const [roomsCount, setRoomsCount] = useState(() =>
+    Math.max(1, Number(searchParams.get('rooms')) || 1),
+  )
+  const [occupancy, setOccupancy] = useState<Occupancy>(DEFAULT_OCCUPANCY)
 
   const handleReserve = (room: Room) => {
     if (!user) {
       navigate('/login', { state: { from: `/hotels/${id}` } })
       return
     }
-    // Booking flow (guest selection → payment) is built in Phase 3.
-    toast.info(`“${room.type}” selected. The booking flow arrives in Phase 3.`)
+    const params = new URLSearchParams({
+      hotelId: String(id),
+      roomId: String(room.id),
+      checkIn,
+      checkOut,
+      rooms: String(roomsCount),
+      adults: String(occupancy.adults),
+      children: String(occupancy.children),
+      infants: String(occupancy.infants),
+    })
+    navigate(`/book?${params.toString()}`)
   }
 
   if (isLoading) return <DetailSkeleton />
@@ -145,6 +175,37 @@ export function HotelDetailPage() {
       {/* Rooms */}
       <section className="mt-10 border-t border-line pt-8">
         <h2 className="text-xl font-bold text-ink-900">Choose your room</h2>
+
+        {/* Stay controls — shared across every room's Reserve action. */}
+        <div className="mt-4 grid gap-3 rounded-2xl border border-line bg-bg p-4 sm:grid-cols-[2fr_1fr_1fr]">
+          <div>
+            <span className="mb-1.5 block text-sm font-medium text-ink-700">Dates</span>
+            <div className="rounded-full border border-line bg-surface px-2">
+              <DateRangePicker
+                startDate={checkIn}
+                endDate={checkOut}
+                minDate={today}
+                onChange={({ startDate, endDate }) => {
+                  setCheckIn(startDate)
+                  setCheckOut(endDate)
+                }}
+              />
+            </div>
+          </div>
+          <div>
+            <span className="mb-1.5 block text-sm font-medium text-ink-700">Rooms</span>
+            <Select
+              options={roomOptions}
+              value={String(roomsCount)}
+              onChange={(e) => setRoomsCount(Number(e.target.value))}
+            />
+          </div>
+          <div>
+            <span className="mb-1.5 block text-sm font-medium text-ink-700">Guests</span>
+            <GuestSelector value={occupancy} onChange={setOccupancy} />
+          </div>
+        </div>
+
         {rooms.length === 0 ? (
           <p className="mt-3 text-ink-500">No rooms are listed for this stay yet.</p>
         ) : (

@@ -36,6 +36,15 @@ Base path: `/api/v1` · Auth: `Authorization: Bearer <jwt>` · Envelope: `{ time
 **BookingStatus:** `RESERVED → GUEST_ADDED → PAYMENTS_PENDING → CONFIRMED / CANCELLED / EXPIRED`
 (A reservation expires 10 min after creation.)
 
+> **Frontend flow notes (Phase 3):**
+> - After Stripe checkout the backend redirects the browser to `{frontend.url}/payments/{bookingId}/status`
+>   for **both** success and failure, so the SPA owns that route and polls `GET /bookings/{id}/status`.
+>   Confirmation itself is applied server-side by the Stripe **webhook**, not the redirect — in dev
+>   no-op mode (no Stripe keys) the booking therefore stays `PAYMENTS_PENDING` until a webhook fires.
+> - `cancel` only succeeds on a `CONFIRMED` booking (refund path).
+> - ⚠️ Gap: `BookingDto` carries **no hotel/room reference**, so "My Trips" can't show the hotel name
+>   from `GET /bookings` alone. Candidate backend enrichment (add `hotel`/`room` summary to the DTO).
+
 ## Hotel Manager *(HOTEL_MANAGER, auth required)*
 | Method | Path | Body | Returns |
 |--------|------|------|---------|
@@ -49,6 +58,16 @@ Base path: `/api/v1` · Auth: `Authorization: Bearer <jwt>` · Envelope: `{ time
 | GET | `/admin/hotels/{id}/rooms` | — | `RoomDto[]` |
 | GET | `/admin/hotels/{id}/rooms/{roomId}` | — | `RoomDto` |
 | DELETE | `/admin/hotels/{id}/rooms/{roomId}` | — | `204` |
+
+> **Frontend flow notes (Phase 4):**
+> - `GET/POST/PUT/DELETE /admin/hotels*` are **owner-scoped** — the list and every mutation act only
+>   on hotels owned by the signed-in manager. New hotels start `active:false` (draft).
+> - `PATCH /activate` sets `active:true` **and generates a year of inventory** for every room — so
+>   add rooms before publishing. It only activates; there is **no deactivate endpoint**, so the UI
+>   "Unpublish" sends `PUT /admin/hotels/{id}` with `active:false`.
+> - Creating a room on an already-active hotel generates that room's inventory immediately.
+> - ⚠️ Gap: no bookings/occupancy **report endpoint** — the manager Overview aggregates the hotels
+>   and rooms it can read; revenue/occupancy analytics await a backend report API (roadmap 6b).
 
 ## Stripe webhook *(public, signature-verified)*
 | Method | Path | Body | Returns |

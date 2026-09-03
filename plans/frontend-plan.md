@@ -13,7 +13,11 @@
 
 **Legend:** `[ ]` not started · `[~]` in progress · `[x]` done & tested
 
-**Status:** Phase 2 — ✅ complete. Guest browse/search/detail built: hero `SearchBar` (city + date range + rooms, RHF+Zod), home "Popular destinations" tiles, `SearchResultsPage` (URL-param driven, responsive grid, pagination, all async states), `HotelDetailPage` (gallery mosaic, amenities, room list, contact, reviews placeholder). New shared primitives: `Rating`, `PriceTag`, `Pagination` + `lib/format.ts`. Verified: build + typecheck + lint pass; routing, form prefill/validation, and empty/loading/error states rendered in-browser (desktop + mobile). *(Live happy-path data not exercisable in the assistant sandbox — backend can't boot here; the same primitives are proven. Next: Phase 3 — booking flow & payments.)* *(Phase 0 & 1 also ✅.)*
+**Status:** Phase 5 — ✅ complete. Polish, responsiveness, a11y & performance pass across the whole app. **Performance:** every route is now a `React.lazy` code-split chunk behind a `Suspense`/`RouteFallback` boundary — the main JS bundle dropped **620 KB → 267 KB** (each page ships its own small chunk, downloaded on navigation) and the build's 500 KB chunk warning is gone; gallery/card images lazy-load. **A11y:** added a keyboard **skip-to-content** link + `<main id="main">` landmark, kept the global brand `:focus-visible` ring, and added a `prefers-reduced-motion` block that neutralizes animations/transitions/smooth-scroll. **UX polish:** `ScrollToTop` resets scroll on navigation; skeleton loaders already cover every async page. **SEO/social:** Open Graph + Twitter card + `theme-color` meta in `index.html`, and per-route document titles via a new `useDocumentTitle` hook (dynamic — e.g. "Stays in Goa · YATRIK", the hotel name on detail). Verified: build + typecheck + lint pass; in-browser check confirmed 15 lazy chunks loading on navigation, correct per-route titles, and the focus-visible skip link. *(This was the last MVP phase — Phases 0–5 all ✅. Remaining work is the post-MVP roadmap in Phase 6: admin role, data-viz dashboards, reviews/wishlist/map, testing, CI/CD, etc.)*
+
+**Prev status (Phase 4 — ✅ complete):** Hotel-manager dashboard built under `features/manager/`: a tabbed **`ManagerLayout`** (`/manager`) wrapping an **Overview** dashboard (`ManagerOverviewPage` — KPI tiles for properties/live/room-types/inventory/nightly-range + a per-hotel table, all aggregated client-side from `/admin/hotels` + rooms via `useQueries`) and **My hotels** (`MyHotelsPage` grid with live/draft badges). Full CRUD: create (`HotelFormPage`) and inline edit (`HotelManagePage`) via a shared **`HotelForm`** (basics, contact, photo/amenity chip lists through `StringListInput`); **room management** (add-room modal `RoomForm` with pricing/inventory/capacity, list + per-room delete); **Publish** (PATCH `/activate`, generates a year of inventory) / **Unpublish** (PUT `active:false`) and a delete-hotel danger zone. New API/hooks/schemas + `StatTile` primitive. Verified: build + typecheck + lint pass; every manager screen (overview, hotels grid, manage page, create form, add-room modal) rendered in-browser via mocked API envelopes. *(Live happy-path against a running backend still not exercisable in the sandbox — backend can't boot here; flows proven with mocked responses. Backend gaps noted: no deactivate endpoint (worked around via PUT) and no bookings/occupancy report endpoint (dashboard aggregates what's available; deep analytics deferred to roadmap 6b). Next: Phase 5 — polish, responsiveness, a11y, performance.)* *(Phases 0–3 also ✅.)*
+
+**Prev status (Phase 3 — ✅ complete):** Guest booking flow & payments built end-to-end under `features/booking/`: an Airbnb-style **guest selector** (adults/children/infants) plus date-range + rooms **stay controls** on the hotel detail page feed each room's **Reserve** into a **checkout** (`/book`) that reserves inventory on mount, collects **guest details** (`GuestDetailsForm`, add/remove rows), shows a transparent **price breakdown** + live **10-min hold countdown** (`BookingSummary`), then chains addGuests → payments → **Stripe redirect**. Added the backend's redirect target **`PaymentStatusPage`** (`/payments/:bookingId/status`, polls `/status` until confirmed/failed/pending) and **`MyBookingsPage`** (`/bookings`) with a manage modal + **cancel/refund** (confirmed-only). New reusable pieces: `GuestSelector`, `GuestDetailsForm`, `BookingSummary`, `BookingStatusBadge`; booking `api.ts`/`hooks.ts`/`schemas.ts`. Verified: build + typecheck + lint pass; checkout, guest-selector modal, My Trips list + detail/cancel modal, and payment-status states all rendered in-browser via mocked API envelopes (desktop). *(Live happy-path against a running backend still not exercisable in the assistant sandbox — backend can't boot here; flows proven with mocked responses. Known backend gap: `BookingDto` carries no hotel/room ref, so My Trips shows booking id/dates/amount rather than the hotel name — a candidate backend enrichment. Next: Phase 4 — hotel manager dashboard.)* *(Phases 0–2 also ✅.)*
 
 ---
 
@@ -64,24 +68,24 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 - [x] Responsive audit: verified home + search states mobile (375) → desktop; search bar & grids reflow, nav collapses to drawer
 
 ## Phase 3 — Guest: Booking Flow & Payments
-- [ ] Guest selector (adults / children / infants) modal
-- [ ] Booking init → add guests form (name, age, gender)
-- [ ] Booking summary + price breakdown
-- [ ] Stripe redirect + payment status page (success/failure) with status polling
-- [ ] My Bookings list + booking detail + cancel (with refund) flow
+- [x] Guest selector (adults / children / infants) modal — `GuestSelector` steppers on the hotel detail stay controls
+- [x] Booking init → add guests form (name, age, gender) — reserve-on-mount + `GuestDetailsForm` (RHF `useFieldArray`, add/remove rows)
+- [x] Booking summary + price breakdown — `BookingSummary` (subtotal + dynamic-pricing delta + total from backend) with a live 10-min hold countdown
+- [x] Stripe redirect + payment status page (success/failure) with status polling — `PaymentStatusPage` at `/payments/:bookingId/status` (the backend redirect target), polls `/status` until terminal
+- [x] My Bookings list + booking detail + cancel (with refund) flow — `MyBookingsPage` at `/bookings` with a manage modal; cancel enabled only for `CONFIRMED`
 
 ## Phase 4 — Hotel Manager Dashboard
-- [ ] Manager layout & navigation
-- [ ] My Hotels list; create/edit hotel (photos, amenities, contact info)
-- [ ] Room management: create/list/delete, pricing, capacity/inventory
-- [ ] Activate / deactivate hotel
-- [ ] Bookings / occupancy overview (needs report endpoint — may extend backend)
+- [x] Manager layout & navigation — `ManagerLayout` with tabbed sub-nav (Overview / My hotels) under `/manager`
+- [x] My Hotels list; create/edit hotel (photos, amenities, contact info) — `MyHotelsPage` grid + `HotelForm` (create page + inline edit on manage page), `StringListInput` chips for photos/amenities
+- [x] Room management: create/list/delete, pricing, capacity/inventory — `RoomForm` (add-room modal), room list with per-room delete on `HotelManagePage`
+- [x] Activate / deactivate hotel — Publish (PATCH `/activate`, generates a year of inventory) / Unpublish (PUT `active:false`, the only deactivate path the backend exposes)
+- [x] Bookings / occupancy overview — `ManagerOverviewPage` KPI tiles + per-hotel table aggregated client-side from `/admin/hotels` + rooms *(booking-level occupancy/revenue still needs a backend report endpoint — deferred to roadmap 6b, with an honest placeholder panel)*
 
 ## Phase 5 — Polish · Responsiveness · A11y · Performance
-- [ ] Micro-interactions (hover, focus, transitions), skeleton loaders everywhere
-- [ ] Full responsive + keyboard-a11y audit; visible focus states
-- [ ] Performance: route-based code splitting, lazy images, prefetch
-- [ ] Meta/SEO basics, favicon, social preview; empty & error illustrations
+- [x] Micro-interactions (hover, focus, transitions), skeleton loaders everywhere — primitives already animate; added `prefers-reduced-motion` to neutralize motion for those who ask; skeletons cover every async page (search, detail, checkout, trips, manager)
+- [x] Full responsive + keyboard-a11y audit; visible focus states — global `:focus-visible` brand ring (already present), a **skip-to-content** link + `<main id="main">` landmark, `RouteFallback` with `role=status`; grids/nav verified reflowing across phases
+- [x] Performance: route-based code splitting, lazy images, prefetch — every page is a `React.lazy` chunk behind Suspense (**main bundle 620 KB → 267 KB**, 500 KB warning gone); gallery/cards lazy-load images
+- [x] Meta/SEO basics, favicon, social preview; empty & error illustrations — Open Graph + Twitter + `theme-color` meta in `index.html`; per-route document titles via `useDocumentTitle` (dynamic for city/hotel); favicon already shipped; `EmptyState` (icon + message + action) used across all empty/error states
 
 ## Phase 6 — Roadmap (post-MVP, interview value-adds)
 *Pick per priority; each is its own mini-plan when we get there.*
@@ -114,6 +118,48 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 ---
 
 ## Change log
+- **2026-09-03 — Phase 5 complete.** Polish / responsiveness / a11y / performance pass.
+  **Code splitting:** rewrote `app/router.tsx` so every page is a `React.lazy` chunk behind a
+  shared `Suspense` + new `RouteFallback` spinner — main bundle 620 KB → 267 KB, per-page chunks,
+  500 KB build warning cleared. **A11y:** `AppLayout` gained a skip-to-content link and a
+  `<main id="main">` landmark; `globals.css` gained a `prefers-reduced-motion` block (kills
+  animations/transitions/smooth-scroll for those who opt out); the global brand focus ring stays.
+  **UX:** new `ScrollToTop` resets scroll on route change. **SEO/social:** `index.html` gained
+  Open Graph, Twitter-card and `theme-color` meta; new `useDocumentTitle` hook sets per-route
+  titles (dynamic for the searched city and hotel name) and is wired into every page. Verified
+  build + typecheck + lint and confirmed in-browser: 15 lazy chunks load across navigation,
+  titles update per route, the skip link is keyboard-focusable. Closes the MVP (Phases 0–5).
+- **2026-09-03 — Phase 4 complete.** Built the hotel-manager dashboard as a new
+  `features/manager/` slice (`api.ts`, `hooks.ts`, `schemas.ts`) over the existing `/admin/hotels`
+  endpoints. Added a tabbed **`ManagerLayout`** (`/manager`) with an **Overview** dashboard
+  (`ManagerOverviewPage`: KPI `StatTile`s + a per-hotel table, aggregated client-side from the
+  hotels list and per-hotel room queries) and a **My hotels** grid (`MyHotelsPage`, live/draft
+  badges). Full hotel CRUD via a shared **`HotelForm`** — create (`HotelFormPage`, `/manager/hotels/new`)
+  and inline edit (`HotelManagePage`, `/manager/hotels/:id`) — with a reusable **`StringListInput`**
+  chip editor for photo URLs and amenities. **Room management** on the manage page: an add-room
+  modal (`RoomForm`: type, price, inventory, capacity, amenities, photos), a room list, and
+  per-room delete (confirm modal). **Publish** uses PATCH `/activate` (generates a year of
+  inventory); **Unpublish** uses PUT with `active:false` (the backend has no dedicated deactivate
+  route). A danger-zone delete removes the hotel. Verified build + typecheck + lint, and rendered
+  every screen in-browser against mocked `{data,error}` envelopes. Backend gaps recorded: no
+  deactivate endpoint (worked around) and no bookings/occupancy report endpoint (overview shows
+  available portfolio data; deep analytics deferred to roadmap 6b).
+- **2026-09-03 — Phase 3 complete.** Built the guest booking flow & payments as a new
+  `features/booking/` slice (`api.ts`, `hooks.ts`, `schemas.ts`). The hotel detail page gained
+  **stay controls** (date-range picker + rooms select + an Airbnb-style **`GuestSelector`**
+  adults/children/infants modal); each room's **Reserve** now carries dates + occupancy into a
+  **`BookingCheckoutPage`** (`/book`). Checkout reserves inventory on mount (`POST /bookings/init`,
+  guarded against StrictMode double-fire), then renders **`GuestDetailsForm`** (RHF `useFieldArray`,
+  add/remove name·age·gender rows) beside a **`BookingSummary`** with a transparent price breakdown
+  (base × nights × rooms + dynamic-pricing delta = backend total) and a live **10-minute hold
+  countdown**; submit chains `addGuests` → `payments` → hands the browser to the returned Stripe
+  (or dev no-op) URL. Added **`PaymentStatusPage`** at `/payments/:bookingId/status` — the exact URL
+  the backend redirects to — which polls `GET /bookings/{id}/status` until it settles into
+  confirmed / failed / still-processing. Added **`MyBookingsPage`** (`/bookings`, replacing the
+  placeholder): a trips list with `BookingStatusBadge`s and a manage modal showing guests + a
+  **cancel (refund)** action enabled only for `CONFIRMED` bookings. Verified build + typecheck +
+  lint, and rendered every new screen in-browser against mocked `{data,error}` envelopes. Noted a
+  backend gap: `BookingDto` has no hotel/room reference, so My Trips can't show the hotel name yet.
 - **2026-08-31 — Phase 2 complete.** Built the guest browse experience: a reusable `SearchBar`
   (city + native date range + rooms, RHF+Zod), a redesigned Home with the hero search + "Popular
   destinations" tiles, `SearchResultsPage` (`/search`, URL-param driven with pagination and

@@ -36,16 +36,21 @@ frontend/src/
     ui/           # primitives (Button, Input, Modal, Drawer, Toast…) + barrel index
     layout/       # Navbar, Footer, AppLayout
     brand/        # Logo
-  features/       # domain slices: auth, home, hotels (Phase 2); booking/manager come in Phase 3+
+  features/       # domain slices: auth, home, hotels (Phase 2), booking (Phase 3), manager (Phase 4)
     <feature>/    #   pages + components/, hooks.ts, api.ts, schemas.ts
   lib/            # api client (axios), cn(), constants
   stores/         # zustand stores (authStore, toastStore)
   types/          # shared TS types (mirror API DTOs)
   styles/         # globals.css — Tailwind v4 @theme tokens
-  hooks/          # shared hooks (added when first needed)
+  hooks/          # shared hooks (useDocumentTitle, …)
 ```
 Path alias `@/*` → `src/*`. Dev tooling: **oxlint** (the Vite template default) + Prettier.
 Vite dev server proxies `/api` → `http://localhost:8080` so the app calls `/api/v1/...` with no CORS.
+
+**Performance (Phase 5):** every route is a `React.lazy` code-split chunk behind a `Suspense`
+boundary (`app/router.tsx` + `RouteFallback`), so first load ships a small shell and each page
+downloads on navigation. Images lazy-load; `prefers-reduced-motion` is honored; per-route
+`<title>`s + Open Graph/Twitter meta cover SEO/social.
 
 ### Why this stack (interview rationale)
 TanStack Query removes hand-rolled fetch/loading/cache boilerplate; Zod gives one source of

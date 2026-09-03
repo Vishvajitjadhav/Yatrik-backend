@@ -2,11 +2,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Input, Select } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { signupSchema, type SignupValues } from './schemas'
 import { useSignup } from './hooks'
 import { AuthShell } from './AuthShell'
 
 export function SignupPage() {
+  useDocumentTitle('Create account')
   const navigate = useNavigate()
   const signup = useSignup()
 
