@@ -1,6 +1,7 @@
 import { useQueries } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Container, EmptyState, Skeleton } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { formatCurrency } from '@/lib/format'
 import type { Room } from '@/types/api'
 import { managerApi } from './api'
@@ -8,6 +9,7 @@ import { useMyHotels } from './hooks'
 import { StatTile } from './components/StatTile'
 
 export function ManagerOverviewPage() {
+  useDocumentTitle('Manager · Overview')
   const { data: hotels, isLoading, isError, refetch } = useMyHotels()
 
   // Fetch rooms for each hotel to build real inventory/pricing aggregates.

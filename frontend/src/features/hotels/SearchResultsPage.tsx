@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Container, EmptyState, Pagination } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { formatDateRange, nightsBetween } from '@/lib/format'
 import { SearchBar } from './components/SearchBar'
 import { HotelCard } from './components/HotelCard'
@@ -19,6 +20,8 @@ export function SearchResultsPage() {
   const endDate = searchParams.get('endDate') ?? ''
   const roomsCount = Number(searchParams.get('rooms') ?? '1')
   const page = Number(searchParams.get('page') ?? '0')
+
+  useDocumentTitle(city ? `Stays in ${city}` : 'Search stays')
 
   const params = useMemo(
     () =>

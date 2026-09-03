@@ -10,6 +10,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { toast } from '@/stores/toastStore'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import type { Hotel, Room } from '@/types/api'
 import { HotelForm } from './components/HotelForm'
 import { RoomForm } from './components/RoomForm'
@@ -48,6 +49,7 @@ export function HotelManagePage() {
 
   const hotelQuery = useManagerHotel(id)
   const roomsQuery = useHotelRooms(id)
+  useDocumentTitle(hotelQuery.data ? `Manage · ${hotelQuery.data.name}` : 'Manage hotel')
   const update = useUpdateHotel(id)
   const activate = useActivateHotel(id)
   const deleteHotel = useDeleteHotel()

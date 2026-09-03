@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { Button, Container, Spinner } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import type { BookingStatus } from '@/types/api'
 import { useBookingStatus } from './hooks'
 
@@ -9,6 +10,7 @@ import { useBookingStatus } from './hooks'
  * a confirmed / failed / pending result.
  */
 export function PaymentStatusPage() {
+  useDocumentTitle('Payment status')
   const { bookingId } = useParams()
   const id = Number(bookingId)
   const { data, isLoading, isError } = useBookingStatus(id)

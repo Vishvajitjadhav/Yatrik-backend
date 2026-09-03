@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Container, EmptyState, Skeleton } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { toast } from '@/stores/toastStore'
 import { useHotelInfo } from '@/features/hotels/hooks'
 import type { Booking } from '@/types/api'
@@ -35,6 +36,7 @@ function useCheckoutParams() {
 }
 
 export function BookingCheckoutPage() {
+  useDocumentTitle('Confirm and pay')
   const p = useCheckoutParams()
   const navigate = useNavigate()
 

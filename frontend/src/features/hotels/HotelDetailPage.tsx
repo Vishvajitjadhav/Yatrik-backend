@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Badge, Button, Container, EmptyState, Rating, Select, Skeleton } from '@/components/ui'
 import { useAuthStore } from '@/stores/authStore'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { addDays, todayIso } from '@/lib/format'
 import { GuestSelector } from '@/features/booking/components/GuestSelector'
 import { DEFAULT_OCCUPANCY, type Occupancy } from '@/features/booking/schemas'
@@ -23,6 +24,7 @@ export function HotelDetailPage() {
   const [searchParams] = useSearchParams()
   const user = useAuthStore((s) => s.user)
   const { data, isLoading, isError, refetch } = useHotelInfo(id)
+  useDocumentTitle(data?.hotel.name)
 
   const today = todayIso()
   // Seed the stay from any dates carried over from search; else sensible defaults.

@@ -2,11 +2,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { loginSchema, type LoginValues } from './schemas'
 import { useLogin } from './hooks'
 import { AuthShell } from './AuthShell'
 
 export function LoginPage() {
+  useDocumentTitle('Sign in')
   const navigate = useNavigate()
   const location = useLocation()
   const login = useLogin()

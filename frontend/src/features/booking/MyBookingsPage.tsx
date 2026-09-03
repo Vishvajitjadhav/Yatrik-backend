@@ -9,12 +9,14 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { toast } from '@/stores/toastStore'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { formatDate, formatDateRange, nightsBetween } from '@/lib/format'
 import type { Booking } from '@/types/api'
 import { BookingStatusBadge } from './components/BookingStatusBadge'
 import { useBookingStatus, useCancelBooking, useMyBookings } from './hooks'
 
 export function MyBookingsPage() {
+  useDocumentTitle('My trips')
   const { data, isLoading, isError, refetch } = useMyBookings()
   const [selected, setSelected] = useState<Booking | null>(null)
 

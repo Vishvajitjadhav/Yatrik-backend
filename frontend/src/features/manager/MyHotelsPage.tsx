@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Badge, Button, Container, EmptyState, Skeleton } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import type { Hotel } from '@/types/api'
 import { useMyHotels } from './hooks'
 
 const PLACEHOLDER = '/placeholder-hotel.svg'
 
 export function MyHotelsPage() {
+  useDocumentTitle('My hotels')
   const { data, isLoading, isError, refetch } = useMyHotels()
 
   return (

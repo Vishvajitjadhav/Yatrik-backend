@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { toast } from '@/stores/toastStore'
 import { HotelForm } from './components/HotelForm'
 import { useCreateHotel } from './hooks'
@@ -7,6 +8,7 @@ import { EMPTY_HOTEL, type HotelFormValues } from './schemas'
 
 /** Create a brand-new hotel (starts as a draft until activated). */
 export function HotelFormPage() {
+  useDocumentTitle('New hotel')
   const navigate = useNavigate()
   const create = useCreateHotel()
 

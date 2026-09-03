@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Badge, Container } from '@/components/ui'
 import { useAuthStore } from '@/stores/authStore'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { addDays, todayIso } from '@/lib/format'
 import { SearchBar } from '@/features/hotels/components/SearchBar'
 import type { SearchValues } from '@/features/hotels/schemas'
@@ -27,6 +28,7 @@ function destinationSearchUrl(city: string): string {
 }
 
 export function HomePage() {
+  useDocumentTitle()
   const user = useAuthStore((s) => s.user)
   const navigate = useNavigate()
 
