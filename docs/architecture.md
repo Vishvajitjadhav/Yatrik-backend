@@ -36,7 +36,7 @@ frontend/src/
     ui/           # primitives (Button, Input, Modal, Drawer, Toast…) + barrel index
     layout/       # Navbar, Footer, AppLayout
     brand/        # Logo
-  features/       # domain slices: auth, home, hotels (Phase 2), booking (Phase 3); manager comes in Phase 4
+  features/       # domain slices: auth, home, hotels (Phase 2), booking (Phase 3), manager (Phase 4)
     <feature>/    #   pages + components/, hooks.ts, api.ts, schemas.ts
   lib/            # api client (axios), cn(), constants
   stores/         # zustand stores (authStore, toastStore)

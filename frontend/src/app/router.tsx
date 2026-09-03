@@ -10,7 +10,11 @@ import { HotelDetailPage } from '@/features/hotels/HotelDetailPage'
 import { BookingCheckoutPage } from '@/features/booking/BookingCheckoutPage'
 import { PaymentStatusPage } from '@/features/booking/PaymentStatusPage'
 import { MyBookingsPage } from '@/features/booking/MyBookingsPage'
-import { PagePlaceholder } from '@/components/PagePlaceholder'
+import { ManagerLayout } from '@/features/manager/ManagerLayout'
+import { ManagerOverviewPage } from '@/features/manager/ManagerOverviewPage'
+import { MyHotelsPage } from '@/features/manager/MyHotelsPage'
+import { HotelFormPage } from '@/features/manager/HotelFormPage'
+import { HotelManagePage } from '@/features/manager/HotelManagePage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
@@ -48,12 +52,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'manager/hotels',
+        path: 'manager',
         element: (
           <ProtectedRoute role="HOTEL_MANAGER">
-            <PagePlaceholder title="My hotels" phase="Phase 4" />
+            <ManagerLayout />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <ManagerOverviewPage /> },
+          { path: 'hotels', element: <MyHotelsPage /> },
+          { path: 'hotels/new', element: <HotelFormPage /> },
+          { path: 'hotels/:hotelId', element: <HotelManagePage /> },
+        ],
       },
       { path: '*', element: <RouteError /> },
     ],

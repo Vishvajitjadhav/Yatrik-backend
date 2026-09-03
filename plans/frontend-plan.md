@@ -13,7 +13,9 @@
 
 **Legend:** `[ ]` not started · `[~]` in progress · `[x]` done & tested
 
-**Status:** Phase 3 — ✅ complete. Guest booking flow & payments built end-to-end under `features/booking/`: an Airbnb-style **guest selector** (adults/children/infants) plus date-range + rooms **stay controls** on the hotel detail page feed each room's **Reserve** into a **checkout** (`/book`) that reserves inventory on mount, collects **guest details** (`GuestDetailsForm`, add/remove rows), shows a transparent **price breakdown** + live **10-min hold countdown** (`BookingSummary`), then chains addGuests → payments → **Stripe redirect**. Added the backend's redirect target **`PaymentStatusPage`** (`/payments/:bookingId/status`, polls `/status` until confirmed/failed/pending) and **`MyBookingsPage`** (`/bookings`) with a manage modal + **cancel/refund** (confirmed-only). New reusable pieces: `GuestSelector`, `GuestDetailsForm`, `BookingSummary`, `BookingStatusBadge`; booking `api.ts`/`hooks.ts`/`schemas.ts`. Verified: build + typecheck + lint pass; checkout, guest-selector modal, My Trips list + detail/cancel modal, and payment-status states all rendered in-browser via mocked API envelopes (desktop). *(Live happy-path against a running backend still not exercisable in the assistant sandbox — backend can't boot here; flows proven with mocked responses. Known backend gap: `BookingDto` carries no hotel/room ref, so My Trips shows booking id/dates/amount rather than the hotel name — a candidate backend enrichment. Next: Phase 4 — hotel manager dashboard.)* *(Phases 0–2 also ✅.)*
+**Status:** Phase 4 — ✅ complete. Hotel-manager dashboard built under `features/manager/`: a tabbed **`ManagerLayout`** (`/manager`) wrapping an **Overview** dashboard (`ManagerOverviewPage` — KPI tiles for properties/live/room-types/inventory/nightly-range + a per-hotel table, all aggregated client-side from `/admin/hotels` + rooms via `useQueries`) and **My hotels** (`MyHotelsPage` grid with live/draft badges). Full CRUD: create (`HotelFormPage`) and inline edit (`HotelManagePage`) via a shared **`HotelForm`** (basics, contact, photo/amenity chip lists through `StringListInput`); **room management** (add-room modal `RoomForm` with pricing/inventory/capacity, list + per-room delete); **Publish** (PATCH `/activate`, generates a year of inventory) / **Unpublish** (PUT `active:false`) and a delete-hotel danger zone. New API/hooks/schemas + `StatTile` primitive. Verified: build + typecheck + lint pass; every manager screen (overview, hotels grid, manage page, create form, add-room modal) rendered in-browser via mocked API envelopes. *(Live happy-path against a running backend still not exercisable in the sandbox — backend can't boot here; flows proven with mocked responses. Backend gaps noted: no deactivate endpoint (worked around via PUT) and no bookings/occupancy report endpoint (dashboard aggregates what's available; deep analytics deferred to roadmap 6b). Next: Phase 5 — polish, responsiveness, a11y, performance.)* *(Phases 0–3 also ✅.)*
+
+**Prev status (Phase 3 — ✅ complete):** Guest booking flow & payments built end-to-end under `features/booking/`: an Airbnb-style **guest selector** (adults/children/infants) plus date-range + rooms **stay controls** on the hotel detail page feed each room's **Reserve** into a **checkout** (`/book`) that reserves inventory on mount, collects **guest details** (`GuestDetailsForm`, add/remove rows), shows a transparent **price breakdown** + live **10-min hold countdown** (`BookingSummary`), then chains addGuests → payments → **Stripe redirect**. Added the backend's redirect target **`PaymentStatusPage`** (`/payments/:bookingId/status`, polls `/status` until confirmed/failed/pending) and **`MyBookingsPage`** (`/bookings`) with a manage modal + **cancel/refund** (confirmed-only). New reusable pieces: `GuestSelector`, `GuestDetailsForm`, `BookingSummary`, `BookingStatusBadge`; booking `api.ts`/`hooks.ts`/`schemas.ts`. Verified: build + typecheck + lint pass; checkout, guest-selector modal, My Trips list + detail/cancel modal, and payment-status states all rendered in-browser via mocked API envelopes (desktop). *(Live happy-path against a running backend still not exercisable in the assistant sandbox — backend can't boot here; flows proven with mocked responses. Known backend gap: `BookingDto` carries no hotel/room ref, so My Trips shows booking id/dates/amount rather than the hotel name — a candidate backend enrichment. Next: Phase 4 — hotel manager dashboard.)* *(Phases 0–2 also ✅.)*
 
 ---
 
@@ -71,11 +73,11 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 - [x] My Bookings list + booking detail + cancel (with refund) flow — `MyBookingsPage` at `/bookings` with a manage modal; cancel enabled only for `CONFIRMED`
 
 ## Phase 4 — Hotel Manager Dashboard
-- [ ] Manager layout & navigation
-- [ ] My Hotels list; create/edit hotel (photos, amenities, contact info)
-- [ ] Room management: create/list/delete, pricing, capacity/inventory
-- [ ] Activate / deactivate hotel
-- [ ] Bookings / occupancy overview (needs report endpoint — may extend backend)
+- [x] Manager layout & navigation — `ManagerLayout` with tabbed sub-nav (Overview / My hotels) under `/manager`
+- [x] My Hotels list; create/edit hotel (photos, amenities, contact info) — `MyHotelsPage` grid + `HotelForm` (create page + inline edit on manage page), `StringListInput` chips for photos/amenities
+- [x] Room management: create/list/delete, pricing, capacity/inventory — `RoomForm` (add-room modal), room list with per-room delete on `HotelManagePage`
+- [x] Activate / deactivate hotel — Publish (PATCH `/activate`, generates a year of inventory) / Unpublish (PUT `active:false`, the only deactivate path the backend exposes)
+- [x] Bookings / occupancy overview — `ManagerOverviewPage` KPI tiles + per-hotel table aggregated client-side from `/admin/hotels` + rooms *(booking-level occupancy/revenue still needs a backend report endpoint — deferred to roadmap 6b, with an honest placeholder panel)*
 
 ## Phase 5 — Polish · Responsiveness · A11y · Performance
 - [ ] Micro-interactions (hover, focus, transitions), skeleton loaders everywhere
@@ -114,6 +116,21 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 ---
 
 ## Change log
+- **2026-09-03 — Phase 4 complete.** Built the hotel-manager dashboard as a new
+  `features/manager/` slice (`api.ts`, `hooks.ts`, `schemas.ts`) over the existing `/admin/hotels`
+  endpoints. Added a tabbed **`ManagerLayout`** (`/manager`) with an **Overview** dashboard
+  (`ManagerOverviewPage`: KPI `StatTile`s + a per-hotel table, aggregated client-side from the
+  hotels list and per-hotel room queries) and a **My hotels** grid (`MyHotelsPage`, live/draft
+  badges). Full hotel CRUD via a shared **`HotelForm`** — create (`HotelFormPage`, `/manager/hotels/new`)
+  and inline edit (`HotelManagePage`, `/manager/hotels/:id`) — with a reusable **`StringListInput`**
+  chip editor for photo URLs and amenities. **Room management** on the manage page: an add-room
+  modal (`RoomForm`: type, price, inventory, capacity, amenities, photos), a room list, and
+  per-room delete (confirm modal). **Publish** uses PATCH `/activate` (generates a year of
+  inventory); **Unpublish** uses PUT with `active:false` (the backend has no dedicated deactivate
+  route). A danger-zone delete removes the hotel. Verified build + typecheck + lint, and rendered
+  every screen in-browser against mocked `{data,error}` envelopes. Backend gaps recorded: no
+  deactivate endpoint (worked around) and no bookings/occupancy report endpoint (overview shows
+  available portfolio data; deep analytics deferred to roadmap 6b).
 - **2026-09-03 — Phase 3 complete.** Built the guest booking flow & payments as a new
   `features/booking/` slice (`api.ts`, `hooks.ts`, `schemas.ts`). The hotel detail page gained
   **stay controls** (date-range picker + rooms select + an Airbnb-style **`GuestSelector`**
