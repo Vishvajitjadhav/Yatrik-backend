@@ -13,7 +13,7 @@
 
 **Legend:** `[ ]` not started · `[~]` in progress · `[x]` done & tested
 
-**Status:** Phase 2 — ✅ complete. Guest browse/search/detail built: hero `SearchBar` (city + date range + rooms, RHF+Zod), home "Popular destinations" tiles, `SearchResultsPage` (URL-param driven, responsive grid, pagination, all async states), `HotelDetailPage` (gallery mosaic, amenities, room list, contact, reviews placeholder). New shared primitives: `Rating`, `PriceTag`, `Pagination` + `lib/format.ts`. Verified: build + typecheck + lint pass; routing, form prefill/validation, and empty/loading/error states rendered in-browser (desktop + mobile). *(Live happy-path data not exercisable in the assistant sandbox — backend can't boot here; the same primitives are proven. Next: Phase 3 — booking flow & payments.)* *(Phase 0 & 1 also ✅.)*
+**Status:** Phase 3 — ✅ complete. Guest booking flow & payments built end-to-end under `features/booking/`: an Airbnb-style **guest selector** (adults/children/infants) plus date-range + rooms **stay controls** on the hotel detail page feed each room's **Reserve** into a **checkout** (`/book`) that reserves inventory on mount, collects **guest details** (`GuestDetailsForm`, add/remove rows), shows a transparent **price breakdown** + live **10-min hold countdown** (`BookingSummary`), then chains addGuests → payments → **Stripe redirect**. Added the backend's redirect target **`PaymentStatusPage`** (`/payments/:bookingId/status`, polls `/status` until confirmed/failed/pending) and **`MyBookingsPage`** (`/bookings`) with a manage modal + **cancel/refund** (confirmed-only). New reusable pieces: `GuestSelector`, `GuestDetailsForm`, `BookingSummary`, `BookingStatusBadge`; booking `api.ts`/`hooks.ts`/`schemas.ts`. Verified: build + typecheck + lint pass; checkout, guest-selector modal, My Trips list + detail/cancel modal, and payment-status states all rendered in-browser via mocked API envelopes (desktop). *(Live happy-path against a running backend still not exercisable in the assistant sandbox — backend can't boot here; flows proven with mocked responses. Known backend gap: `BookingDto` carries no hotel/room ref, so My Trips shows booking id/dates/amount rather than the hotel name — a candidate backend enrichment. Next: Phase 4 — hotel manager dashboard.)* *(Phases 0–2 also ✅.)*
 
 ---
 
@@ -64,11 +64,11 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 - [x] Responsive audit: verified home + search states mobile (375) → desktop; search bar & grids reflow, nav collapses to drawer
 
 ## Phase 3 — Guest: Booking Flow & Payments
-- [ ] Guest selector (adults / children / infants) modal
-- [ ] Booking init → add guests form (name, age, gender)
-- [ ] Booking summary + price breakdown
-- [ ] Stripe redirect + payment status page (success/failure) with status polling
-- [ ] My Bookings list + booking detail + cancel (with refund) flow
+- [x] Guest selector (adults / children / infants) modal — `GuestSelector` steppers on the hotel detail stay controls
+- [x] Booking init → add guests form (name, age, gender) — reserve-on-mount + `GuestDetailsForm` (RHF `useFieldArray`, add/remove rows)
+- [x] Booking summary + price breakdown — `BookingSummary` (subtotal + dynamic-pricing delta + total from backend) with a live 10-min hold countdown
+- [x] Stripe redirect + payment status page (success/failure) with status polling — `PaymentStatusPage` at `/payments/:bookingId/status` (the backend redirect target), polls `/status` until terminal
+- [x] My Bookings list + booking detail + cancel (with refund) flow — `MyBookingsPage` at `/bookings` with a manage modal; cancel enabled only for `CONFIRMED`
 
 ## Phase 4 — Hotel Manager Dashboard
 - [ ] Manager layout & navigation
@@ -114,6 +114,22 @@ This plan is self-contained — a new session needs only this file + `docs/`, no
 ---
 
 ## Change log
+- **2026-09-03 — Phase 3 complete.** Built the guest booking flow & payments as a new
+  `features/booking/` slice (`api.ts`, `hooks.ts`, `schemas.ts`). The hotel detail page gained
+  **stay controls** (date-range picker + rooms select + an Airbnb-style **`GuestSelector`**
+  adults/children/infants modal); each room's **Reserve** now carries dates + occupancy into a
+  **`BookingCheckoutPage`** (`/book`). Checkout reserves inventory on mount (`POST /bookings/init`,
+  guarded against StrictMode double-fire), then renders **`GuestDetailsForm`** (RHF `useFieldArray`,
+  add/remove name·age·gender rows) beside a **`BookingSummary`** with a transparent price breakdown
+  (base × nights × rooms + dynamic-pricing delta = backend total) and a live **10-minute hold
+  countdown**; submit chains `addGuests` → `payments` → hands the browser to the returned Stripe
+  (or dev no-op) URL. Added **`PaymentStatusPage`** at `/payments/:bookingId/status` — the exact URL
+  the backend redirects to — which polls `GET /bookings/{id}/status` until it settles into
+  confirmed / failed / still-processing. Added **`MyBookingsPage`** (`/bookings`, replacing the
+  placeholder): a trips list with `BookingStatusBadge`s and a manage modal showing guests + a
+  **cancel (refund)** action enabled only for `CONFIRMED` bookings. Verified build + typecheck +
+  lint, and rendered every new screen in-browser against mocked `{data,error}` envelopes. Noted a
+  backend gap: `BookingDto` has no hotel/room reference, so My Trips can't show the hotel name yet.
 - **2026-08-31 — Phase 2 complete.** Built the guest browse experience: a reusable `SearchBar`
   (city + native date range + rooms, RHF+Zod), a redesigned Home with the hero search + "Popular
   destinations" tiles, `SearchResultsPage` (`/search`, URL-param driven with pagination and

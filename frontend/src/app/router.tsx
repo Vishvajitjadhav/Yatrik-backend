@@ -7,6 +7,9 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { SearchResultsPage } from '@/features/hotels/SearchResultsPage'
 import { HotelDetailPage } from '@/features/hotels/HotelDetailPage'
+import { BookingCheckoutPage } from '@/features/booking/BookingCheckoutPage'
+import { PaymentStatusPage } from '@/features/booking/PaymentStatusPage'
+import { MyBookingsPage } from '@/features/booking/MyBookingsPage'
 import { PagePlaceholder } from '@/components/PagePlaceholder'
 
 export const router = createBrowserRouter([
@@ -21,10 +24,26 @@ export const router = createBrowserRouter([
       { path: 'search', element: <SearchResultsPage /> },
       { path: 'hotels/:hotelId', element: <HotelDetailPage /> },
       {
+        path: 'book',
+        element: (
+          <ProtectedRoute role="GUEST">
+            <BookingCheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/:bookingId/status',
+        element: (
+          <ProtectedRoute role="GUEST">
+            <PaymentStatusPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'bookings',
         element: (
           <ProtectedRoute role="GUEST">
-            <PagePlaceholder title="My trips" phase="Phase 3" />
+            <MyBookingsPage />
           </ProtectedRoute>
         ),
       },
